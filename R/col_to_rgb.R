@@ -21,3 +21,15 @@ col_to_rgb <- function(col) {
   .Call(col_to_rgb_, col)
 }
 
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#' Convert colours-as-strings to packed integer colours for nativeRasters
+#' 
+#' @inheritParams col_to_rgb
+#' 
+#' @return integer vector
+#' @export
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+col_to_packed_int <- function(col) {
+  .Call(col_to_packed_int_, col)
+}

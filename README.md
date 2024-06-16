@@ -62,11 +62,11 @@ res <- bench::mark(
 knitr::kable(res[,1:5])
 ```
 
-| expression          |   min |  median |    itr/sec | mem_alloc |
-|:--------------------|------:|--------:|-----------:|----------:|
-| this package (hash) | 138µs | 152.8µs | 6425.62229 |     166KB |
-| farver              | 561µs | 583.4µs | 1703.63404 |     172KB |
-| baseR (linear)      |  16ms |  16.3ms |   61.39644 |     313KB |
+| expression          |     min |  median |    itr/sec | mem_alloc |
+|:--------------------|--------:|--------:|-----------:|----------:|
+| this package (hash) | 138.7µs | 149.2µs | 6551.40427 |     166KB |
+| farver              | 564.9µs | 576.4µs | 1722.62984 |     172KB |
+| baseR (linear)      |  15.9ms |  17.1ms |   58.40246 |     313KB |
 
 </details>
 
@@ -125,6 +125,11 @@ col_to_rgb(c('white', 'blue'))
 #> alpha  255  255
 ```
 
+<details>
+<summary>
+Click to show/hide benchmarking code
+</summary>
+
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Lots of named colours
@@ -140,7 +145,15 @@ a3 <- farver::decode_colour(cols) |> t()
 a3 <- rbind(a3, 255L)
 rownames(a3) <- c('red', 'green', 'blue', 'alpha')
 identical(a1, a2)
+#> [1] TRUE
+```
+
+``` r
 identical(a2, a3)
+#> [1] TRUE
+```
+
+``` r
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Benchmark
@@ -152,13 +165,16 @@ res <- bench::mark(
   farver       = decode_colour(cols, alpha = TRUE),
   check = FALSE
 )
+knitr::kable(res[,1:5])
 ```
 
-| expression          |   min |  median |    itr/sec | mem_alloc |
-|:--------------------|------:|--------:|-----------:|----------:|
-| this package (hash) | 138µs | 152.8µs | 6425.62229 |     166KB |
-| farver              | 561µs | 583.4µs | 1703.63404 |     172KB |
-| baseR (linear)      |  16ms |  16.3ms |   61.39644 |     313KB |
+| expression   |     min |  median |    itr/sec | mem_alloc |
+|:-------------|--------:|--------:|-----------:|----------:|
+| colourlookup | 140.3µs |   162µs | 6138.72204 |     156KB |
+| baseR        |  16.6ms |  17.3ms |   57.33833 |     313KB |
+| farver       | 567.9µs | 632.2µs | 1592.72642 |     313KB |
+
+</details>
 
 <img src="man/figures/README-unnamed-chunk-7-1.png" width="100%" />
 
@@ -174,6 +190,11 @@ col_to_rgb(c('#12345678', '#ab1276'))
 #> blue    86  118
 #> alpha  120  255
 ```
+
+<details>
+<summary>
+Click to show/hide benchmarking code
+</summary>
 
 ``` r
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -193,7 +214,15 @@ a3 <- farver::decode_colour(cols) |> t()
 a3 <- rbind(a3, 255L)
 rownames(a3) <- c('red', 'green', 'blue', 'alpha')
 identical(a1, a2)
+#> [1] TRUE
+```
+
+``` r
 identical(a2, a3)
+#> [1] TRUE
+```
+
+``` r
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # benchmark
@@ -205,15 +234,64 @@ res <- bench::mark(
   farver       = decode_colour(cols, alpha = TRUE),
   check = FALSE
 )
+knitr::kable(res[,1:5])
 ```
 
-| expression          |   min |  median |    itr/sec | mem_alloc |
-|:--------------------|------:|--------:|-----------:|----------:|
-| this package (hash) | 138µs | 152.8µs | 6425.62229 |     166KB |
-| farver              | 561µs | 583.4µs | 1703.63404 |     172KB |
-| baseR (linear)      |  16ms |  16.3ms |   61.39644 |     313KB |
+| expression   |     min |  median |   itr/sec | mem_alloc |
+|:-------------|--------:|--------:|----------:|----------:|
+| colourlookup |  39.8µs |  49.5µs | 19924.052 |     156KB |
+| baseR        | 276.1µs | 318.9µs |  3133.678 |     313KB |
+| farver       |  90.9µs | 112.4µs |  8804.762 |     313KB |
+
+</details>
 
 <img src="man/figures/README-unnamed-chunk-10-1.png" width="100%" />
+
+## Looking up native raster “packed integer” for hex colours in R
+
+Example
+
+``` r
+col_to_packed_int(c('#12345678', '#ab1276'))
+#> [1] 2018915346   -9039189
+```
+
+<details>
+<summary>
+Click to show/hide benchmarking code
+</summary>
+
+``` r
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lots of hex colours
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cols <- sample(colours(), 10000, T) |>
+  col_to_rgb() |>
+  t() |>
+  rgb(maxColorValue = 255)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# benchmark
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(farver)
+res <- bench::mark(
+  `this package` = col_to_packed_int(cols),
+  farver         = encode_native(cols),
+  check = FALSE
+)
+
+knitr::kable(res[,1:5])
+```
+
+| expression   |    min | median |  itr/sec | mem_alloc |
+|:-------------|-------:|-------:|---------:|----------:|
+| this package | 43.8µs | 47.4µs | 20751.52 |    39.1KB |
+| farver       | 77.4µs | 84.9µs | 11652.11 |    45.6KB |
+
+</details>
+
+<img src="man/figures/README-unnamed-chunk-13-1.png" width="100%" />
 
 # Technical Details: Order-preserving minimal perfect hash
 

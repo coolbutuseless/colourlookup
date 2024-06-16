@@ -15,7 +15,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Colour names as returned by "colors()"
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static char *col_name[] = {
+char *col_name[] = {
   "white", "aliceblue", "antiquewhite", "antiquewhite1", "antiquewhite2", 
   "antiquewhite3", "antiquewhite4", "aquamarine", "aquamarine1", 
   "aquamarine2", "aquamarine3", "aquamarine4", "azure", "azure1", 

@@ -147,8 +147,10 @@ col_to_rgb(c('white', 'blue'))
 set.seed(1)
 ```
 
+<details>
+<summary>Click to show/hide benchmarking code</summary>
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Lots of named colours
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -175,11 +177,12 @@ res <- bench::mark(
   farver       = decode_colour(cols, alpha = TRUE),
   check = FALSE
 )
+knitr::kable(res[,1:5])
 ```
 
+</details>
 
 ```{r echo=FALSE}
-knitr::kable(res[,1:5])
 plot(res) + theme_bw()
 ```
 
@@ -194,9 +197,11 @@ col_to_rgb(c('#12345678', '#ab1276'))
 ```
 
 
+<details>
+<summary>Click to show/hide benchmarking code</summary>
 
 
-```{r eval = FALSE}
+```{r eval = TRUE}
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # Lots of hex colours
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -226,13 +231,60 @@ res <- bench::mark(
   farver       = decode_colour(cols, alpha = TRUE),
   check = FALSE
 )
+knitr::kable(res[,1:5])
 ```
+
+</details>
 
 
 ```{r echo=FALSE}
-knitr::kable(res[,1:5])
 plot(res) + theme_bw()
 ```
+
+
+
+Looking up native raster "packed integer" for hex colours in R
+-------------------------------------------------------------------------------
+
+Example
+
+```{r}
+col_to_packed_int(c('#12345678', '#ab1276'))
+```
+
+
+<details>
+<summary>Click to show/hide benchmarking code</summary>
+
+```{r eval = TRUE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lots of hex colours
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cols <- sample(colours(), 10000, T) |>
+  col_to_rgb() |>
+  t() |>
+  rgb(maxColorValue = 255)
+
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# benchmark
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(farver)
+res <- bench::mark(
+  `this package` = col_to_packed_int(cols),
+  farver         = encode_native(cols),
+  check = FALSE
+)
+
+knitr::kable(res[,1:5])
+```
+
+</details>
+
+```{r echo=FALSE}
+plot(res) + theme_bw()
+```
+
 
 
 Technical Details: Order-preserving minimal perfect hash
