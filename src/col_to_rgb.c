@@ -812,7 +812,15 @@ static int col_int[][4] = {
 // This is a bit rough.  Doesn't raise an error if the supposed hexdigit
 // is something stupid e.g. "#1122qq"
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#define hex2int(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
+// #define hex2int(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Convert a hex digit to a nibble. 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// static unsigned int hexdigit(unsigned int x) {
+//   return (x & 0xf) + (x >> 6) + ((x >> 6) << 3);
+// }
+#define hex2int(x) ( ((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3) )
 
 
 SEXP col_to_rgb_(SEXP cols_) {
@@ -823,10 +831,10 @@ SEXP col_to_rgb_(SEXP cols_) {
   SEXP res_        = PROTECT(allocMatrix(INTSXP, 4, n));
   SEXP dim_names_  = PROTECT(allocVector(VECSXP, 2));
   SEXP names_      = PROTECT(allocVector(STRSXP, 4));
-  SET_STRING_ELT(names_, 0, mkChar("red"));
-  SET_STRING_ELT(names_, 1, mkChar("green"));
-  SET_STRING_ELT(names_, 2, mkChar("blue"));
-  SET_STRING_ELT(names_, 3, mkChar("alpha"));
+  SET_STRING_ELT(names_, 0, mkChar("r"));
+  SET_STRING_ELT(names_, 1, mkChar("g"));
+  SET_STRING_ELT(names_, 2, mkChar("b"));
+  SET_STRING_ELT(names_, 3, mkChar("a"));
   SET_VECTOR_ELT(dim_names_, 0, names_);
   setAttrib(res_, R_DimNamesSymbol, dim_names_);
   
@@ -870,7 +878,7 @@ SEXP col_to_rgb_(SEXP cols_) {
         str++; b = hex2int(*str);
         *ptr++ = (a << 4) + b;
         
-        *ptr++ = 0;
+        *ptr++ = 255;
       }
         break;
       case 5: {
@@ -899,7 +907,7 @@ SEXP col_to_rgb_(SEXP cols_) {
         str++; a = hex2int(*str); 
         *ptr++ = (a << 4)  + a;
         
-        *ptr++ = 0;
+        *ptr++ = 255;
       }
         break;
       default:
