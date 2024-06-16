@@ -317,9 +317,9 @@ Hash collisions mean that you don't know for sure which string produced a partic
 hash, and so extra context information is kept to help disambiguate when this occurs.
 
 ```
-hash("apple")  => 1034  # Collision with "carrot"
-hash("banana") => 245
-hash("carrot") => 1034  # Collision with "apple"
+poor_hash("apple")  => 1034  # Collision with "carrot"
+poor_hash("banana") => 245
+poor_hash("carrot") => 1034  # Collision with "apple"
 ```
 
 
@@ -332,9 +332,9 @@ has no collisions.
 
 
 ```
-hash("apple")  => 1034 
-hash("banana") => 245
-hash("carrot") => 876  
+perfect_hash("apple")  => 1034 
+perfect_hash("banana") => 245
+perfect_hash("carrot") => 876  
 ```
 
 
@@ -347,9 +347,9 @@ Note: the order of the integers does not have to match the original order of the
 
 
 ```
-hash("apple")  => 3 
-hash("banana") => 1
-hash("carrot") => 2  
+min_perfect_hash("apple")  => 3 
+min_perfect_hash("banana") => 1
+min_perfect_hash("carrot") => 2  
 ```
 
 ### Order-Preserving Minimal Perfect Hashing
@@ -362,7 +362,7 @@ As an example, if we have 3 strings "apple", "banana" and "carrot", an *order-pr
 minimal perfect hash* would have the following result:
 
 ```
-hash("apple")  => 1
-hash("banana") => 2
-hash("carrot") => 3
+omph_hash("apple")  => 1
+omph_hash("banana") => 2
+omph_hash("carrot") => 3
 ```

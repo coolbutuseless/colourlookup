@@ -62,11 +62,11 @@ res <- bench::mark(
 knitr::kable(res[,1:5])
 ```
 
-| expression          |     min |  median |    itr/sec | mem_alloc |
-|:--------------------|--------:|--------:|-----------:|----------:|
-| this package (hash) | 138.7µs | 149.2µs | 6551.40427 |     166KB |
-| farver              | 564.9µs | 576.4µs | 1722.62984 |     172KB |
-| baseR (linear)      |  15.9ms |  17.1ms |   58.40246 |     313KB |
+| expression          |     min |  median |   itr/sec | mem_alloc |
+|:--------------------|--------:|--------:|----------:|----------:|
+| this package (hash) | 137.4µs | 151.1µs | 6524.3807 |     166KB |
+| farver              | 562.5µs | 580.7µs | 1711.4556 |     172KB |
+| baseR (linear)      |  15.9ms |  16.2ms |   61.7129 |     313KB |
 
 </details>
 
@@ -168,11 +168,11 @@ res <- bench::mark(
 knitr::kable(res[,1:5])
 ```
 
-| expression   |     min |  median |    itr/sec | mem_alloc |
-|:-------------|--------:|--------:|-----------:|----------:|
-| colourlookup | 140.3µs |   162µs | 6138.72204 |     156KB |
-| baseR        |  16.6ms |  17.3ms |   57.33833 |     313KB |
-| farver       | 567.9µs | 632.2µs | 1592.72642 |     313KB |
+| expression   |   min |  median |    itr/sec | mem_alloc |
+|:-------------|------:|--------:|-----------:|----------:|
+| colourlookup | 137µs | 147.4µs | 6659.06506 |     156KB |
+| baseR        |  16ms |  16.3ms |   61.30677 |     313KB |
+| farver       | 567µs | 591.6µs | 1679.82052 |     313KB |
 
 </details>
 
@@ -239,9 +239,9 @@ knitr::kable(res[,1:5])
 
 | expression   |     min |  median |   itr/sec | mem_alloc |
 |:-------------|--------:|--------:|----------:|----------:|
-| colourlookup |  39.8µs |  49.5µs | 19924.052 |     156KB |
-| baseR        | 276.1µs | 318.9µs |  3133.678 |     313KB |
-| farver       |  90.9µs | 112.4µs |  8804.762 |     313KB |
+| colourlookup |    37µs |  42.8µs | 22912.095 |     156KB |
+| baseR        | 279.2µs | 296.9µs |  3322.246 |     313KB |
+| farver       |  90.5µs | 102.6µs |  9562.114 |     313KB |
 
 </details>
 
@@ -286,8 +286,8 @@ knitr::kable(res[,1:5])
 
 | expression   |    min | median |  itr/sec | mem_alloc |
 |:-------------|-------:|-------:|---------:|----------:|
-| this package | 43.8µs | 47.4µs | 20751.52 |    39.1KB |
-| farver       | 77.4µs | 84.9µs | 11652.11 |    45.6KB |
+| this package | 36.7µs | 38.5µs | 25449.24 |    39.1KB |
+| farver       | 77.1µs | 79.7µs | 12276.40 |    45.6KB |
 
 </details>
 
@@ -330,9 +330,9 @@ Hash collisions mean that you don’t know for sure which string produced
 a particular hash, and so extra context information is kept to help
 disambiguate when this occurs.
 
-    hash("apple")  => 1034  # Collision with "carrot"
-    hash("banana") => 245
-    hash("carrot") => 1034  # Collision with "apple"
+    poor_hash("apple")  => 1034  # Collision with "carrot"
+    poor_hash("banana") => 245
+    poor_hash("carrot") => 1034  # Collision with "apple"
 
 ### Perfect Hashing
 
@@ -340,9 +340,9 @@ disambiguate when this occurs.
 is when the input data is known and fixed, and there exists a hash that
 has no collisions.
 
-    hash("apple")  => 1034 
-    hash("banana") => 245
-    hash("carrot") => 876  
+    perfect_hash("apple")  => 1034 
+    perfect_hash("banana") => 245
+    perfect_hash("carrot") => 876  
 
 ### Minimal Perfect Hashing
 
@@ -354,9 +354,9 @@ integers.
 Note: the order of the integers does not have to match the original
 order of the strings.
 
-    hash("apple")  => 3 
-    hash("banana") => 1
-    hash("carrot") => 2  
+    min_perfect_hash("apple")  => 3 
+    min_perfect_hash("banana") => 1
+    min_perfect_hash("carrot") => 2  
 
 ### Order-Preserving Minimal Perfect Hashing
 
@@ -368,6 +368,6 @@ order as the strings were defined.
 As an example, if we have 3 strings “apple”, “banana” and “carrot”, an
 *order-preserving minimal perfect hash* would have the following result:
 
-    hash("apple")  => 1
-    hash("banana") => 2
-    hash("carrot") => 3
+    omph_hash("apple")  => 1
+    omph_hash("banana") => 2
+    omph_hash("carrot") => 3
