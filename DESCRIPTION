@@ -1,11 +1,14 @@
-Package: colourlookup
 Type: Package
-Title: Fast Colour Name Lookup
-Version: 0.1.0
-Author: mikefc
-Maintainer: mikefc <mikefc@coolbutuseless.com>
-Description: Fast lookup of rgb values for R colour names using an order-preserving
-    minimal perfect hash.
+Package: colourlookup
+Title: Fast Conversion of Hex Colours and R Colour Names to Integer Arrays
+    of RGBA Values.
+Version: 0.1.1
+Authors@R: 
+    person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph"))
+Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
+Description: Fast lookup of rgb values for R colour names using an
+    order-preserving minimal perfect hash.  Also includes fast lookup of
+    RGBA values for hexadecimal colours.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true

@@ -808,33 +808,29 @@ static int col_int[][4] = {
 
 
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// This is a bit rough.  Doesn't raise an error if the supposed hexdigit
-// is something stupid e.g. "#1122qq"
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// #define hex2int(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Convert a hex digit to a nibble. 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// static unsigned int hexdigit(unsigned int x) {
-//   return (x & 0xf) + (x >> 6) + ((x >> 6) << 3);
-// }
-#define hex2int(x) ( ((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3) )
+// #define hex2nibble(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
+#define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
 
 
 SEXP col_to_rgb_(SEXP cols_) {
   
   int n = LENGTH(cols_);
   
-  /* First set up the output matrix */
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Output matrix
+  //   - 4 rows = one for each colour
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   SEXP res_        = PROTECT(allocMatrix(INTSXP, 4, n));
   SEXP dim_names_  = PROTECT(allocVector(VECSXP, 2));
   SEXP names_      = PROTECT(allocVector(STRSXP, 4));
-  SET_STRING_ELT(names_, 0, mkChar("r"));
-  SET_STRING_ELT(names_, 1, mkChar("g"));
-  SET_STRING_ELT(names_, 2, mkChar("b"));
-  SET_STRING_ELT(names_, 3, mkChar("a"));
+  SET_STRING_ELT(names_, 0, mkChar("red"));
+  SET_STRING_ELT(names_, 1, mkChar("green"));
+  SET_STRING_ELT(names_, 2, mkChar("blue"));
+  SET_STRING_ELT(names_, 3, mkChar("alpha"));
   SET_VECTOR_ELT(dim_names_, 0, names_);
   setAttrib(res_, R_DimNamesSymbol, dim_names_);
   
@@ -845,70 +841,29 @@ SEXP col_to_rgb_(SEXP cols_) {
     
     if (str[0] == '#') {
       switch(strlen(str)) {
-      case 9: {
-      int a, b;
-      str++; a = hex2int(*str); 
-      str++; b = hex2int(*str);
-      *ptr++ = (a << 4) + b;
-      
-      str++; a = hex2int(*str); 
-      str++; b = hex2int(*str);
-      *ptr++ = (a << 4) + b;
-      
-      str++; a = hex2int(*str); 
-      str++; b = hex2int(*str);
-      *ptr++ = (a << 4) + b;
-      
-      str++; a = hex2int(*str); 
-      str++; b = hex2int(*str);
-      *ptr++ = (a << 4) + b;
-    }
+      case 9: 
+        *ptr++ = (hex2nibble(str[1]) << 4) + hex2nibble(str[2]);
+        *ptr++ = (hex2nibble(str[3]) << 4) + hex2nibble(str[4]);
+        *ptr++ = (hex2nibble(str[5]) << 4) + hex2nibble(str[6]);
+        *ptr++ = (hex2nibble(str[7]) << 4) + hex2nibble(str[8]);
         break;
-      case 7: {
-        int a, b;
-        str++; a = hex2int(*str); 
-        str++; b = hex2int(*str);
-        *ptr++ = (a << 4) + b;
-        
-        str++; a = hex2int(*str); 
-        str++; b = hex2int(*str);
-        *ptr++ = (a << 4) + b;
-        
-        str++; a = hex2int(*str); 
-        str++; b = hex2int(*str);
-        *ptr++ = (a << 4) + b;
-        
+      case 7: 
+        *ptr++ = (hex2nibble(str[1]) << 4) + hex2nibble(str[2]);
+        *ptr++ = (hex2nibble(str[3]) << 4) + hex2nibble(str[4]);
+        *ptr++ = (hex2nibble(str[5]) << 4) + hex2nibble(str[6]);
         *ptr++ = 255;
-      }
         break;
-      case 5: {
-        int a;
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4) + a;
-        
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4) + a;
-        
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4)  + a;
-        
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4)  + a;
-      }
+      case 5: 
+        *ptr++ = hex2nibble(str[1]) * (16 + 1);
+        *ptr++ = hex2nibble(str[2]) * (16 + 1);
+        *ptr++ = hex2nibble(str[3]) * (16 + 1);
+        *ptr++ = hex2nibble(str[4]) * (16 + 1);
         break;
-      case 4: {
-        int a;
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4) + a;
-        
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4) + a;
-        
-        str++; a = hex2int(*str); 
-        *ptr++ = (a << 4)  + a;
-        
+      case 4: 
+        *ptr++ = hex2nibble(str[1]) * (16 + 1);
+        *ptr++ = hex2nibble(str[2]) * (16 + 1);
+        *ptr++ = hex2nibble(str[3]) * (16 + 1);
         *ptr++ = 255;
-      }
         break;
       default:
         error("Unhandled hex notation for: %s", str);
@@ -925,11 +880,8 @@ SEXP col_to_rgb_(SEXP cols_) {
       if (idx < 0 || idx > 656 || memcmp(str, col_name[idx], 3) != 0) {
         error("Not a valid colour name: %s", str);
       }
-      int *icol = col_int[idx];
-      *ptr++ = *icol++;
-      *ptr++ = *icol++;
-      *ptr++ = *icol++;
-      *ptr++ = *icol;
+      memcpy(ptr, col_int[idx], 4 * sizeof(int));
+      ptr += 4;
     }
   }
   UNPROTECT(3);

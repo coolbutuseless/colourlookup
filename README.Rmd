@@ -17,12 +17,14 @@ library(colourlookup)
 library(tidyr)
 library(ggbeeswarm)
 library(ggplot2)
+library(farver)
 ```
 
 # colourlookup
 
 <!-- badges: start -->
 ![](https://img.shields.io/badge/cool-useless-green.svg)
+[![R-CMD-check](https://github.com/coolbutuseless/colourlookup/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/coolbutuseless/colourlookup/actions/workflows/R-CMD-check.yaml)
 <!-- badges: end -->
 
 `{colourlookup}` is a proof-of-concept technical demonstration of an order-preserving
@@ -31,45 +33,209 @@ minimal perfect hash in application to R colour handling.
 Using a hash to match colour names can be of the order of ~100x faster than 
 a linear search.  
 
+### R colours
+
+R has 657 built-in colour names it understands e.g. "red", "hotpink".  This is 
+a fixed list of colours that has not changed membership since originally introduced
+(as far as I know).
+
+When looking up colours with base R `col2rgb()`, a linear search over these 657 colours
+is performed to find the matching RGBA values.
+
+Since the list of colours is fixed and known, this colour lookup can be
+replaced by a hash lookup which is faster.
+
+In particular, this package uses an *order-preserving minimal perfect hash* - 
+see the technical details at the bottom of this page.
+
+
 ### What's in the box
 
 * `col_to_rgb()` a version of `col2rgb()` which uses hash lookup rather than 
   linear search to match R colour names to RGBA values.
 #### Benchmark
 
-This is the results of a benchmark comparing R's `col2rgb()` (using linear name search) with this package's
-`col_to_rgb()` using a hashed name lookup.
+### Benchmark 
 
-See end of this page for benchmark code.
+This benchmark compares named colour lookup of RGBA values with:
 
-```{r echo = FALSE, fig.height = 3, fig.width = 8}
-cols <- colours()
+* baseR's `col2rgb()` (using linear name search)
+* colour lookup using `farver::decode_colour()`
+* this package's `col_to_rgb()` using a hashed name lookup.
+
+
+<details>
+<summary>Click to show/hide benchmarking code</summary>
+
+```{r echo = TRUE}
+cols <- sample(colours(), 10000, T)
 
 res <- bench::mark(
-  `hash lookup` = col_to_rgb(cols),
-  `linear lookup` = col2rgb(cols, alpha = TRUE),
-  check = TRUE
+  `this package (hash)` = col_to_rgb(cols),
+  `farver` = decode_colour(cols),
+  `baseR (linear)` = col2rgb(cols, alpha = TRUE),
+  check = FALSE
 )
-
 knitr::kable(res[,1:5])
+```
+</details>
 
+
+```{r echo = FALSE, fig.height = 3, fig.width = 8}
 res$expression <- as.character(res$expression)
 ggplot(res) + 
   geom_col(aes(expression, `itr/sec`, fill = expression)) + 
   theme_bw() + 
   theme(legend.position = 'none') + 
-  scale_fill_manual(values = c('dodgerblue4', 'grey50')) + 
+  scale_fill_manual(values = c('grey50', 'grey50', 'dodgerblue4')) + 
   labs(
     x = NULL,
     y = "Iterations / second",
     title = "Speed comparison of hash lookup vs built-in linear search",
-    subtitle = "when finding RGBA values for all named colours"
+    subtitle = "Finding RGBA values for 10,000 named colours"
   )
 
 ```
 
 
-Order-preserving minimal perfect hash
+## Installation
+
+You can install from [GitHub](https://github.com/coolbutuseless/colourlookup) with:
+
+``` r
+# install.package('remotes')
+remotes::install_github('coolbutuseless/colourlookup')
+```
+
+## Example
+
+```{r example}
+library(colourlookup)
+
+col_to_rgb(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
+```
+
+
+## Creating the C code for the minimal perfect hash
+
+There are a number of programs which will produce C code to
+do minimal perfect hashing of a list of strings e.g. `gperf`, `cmph`.
+
+I chose `mph` as described in [A Family of Perfect Hashing Methods(pdf)](https://staff.itee.uq.edu.au/havas/TR0242.pdf)
+
+* Download and compile [http://www.ibiblio.org/pub/Linux/devel/lang/c/mph-1.2.tar.gz]
+* In R: `writeLines(colors(), "input.txt")`
+* On the command line:  `mph < input.txt | emitc > hash.c`
+* Incorporate the `hash.c` code into this package and add the `col_to_rgb()` wrapper
+  which uses it.
+
+
+
+Benchmarks
+===============================================================================
+
+Looking up RGBA values for all named colours in R
+-------------------------------------------------------------------------------
+
+Example
+
+```{r}
+col_to_rgb(c('white', 'blue'))
+```
+
+```{r echo=FALSE}
+set.seed(1)
+```
+
+
+```{r eval = FALSE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lots of named colours
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cols <- sample(colours(), 10000, T)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Check we all agree on the RGB representation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+a1 <- col_to_rgb(cols)
+a2 <- col2rgb(cols, alpha = TRUE)
+a3 <- farver::decode_colour(cols) |> t()
+a3 <- rbind(a3, 255L)
+rownames(a3) <- c('red', 'green', 'blue', 'alpha')
+identical(a1, a2)
+identical(a2, a3)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Benchmark
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(farver)
+res <- bench::mark(
+  colourlookup = col_to_rgb(cols),
+  baseR        = col2rgb(cols, alpha = TRUE),
+  farver       = decode_colour(cols, alpha = TRUE),
+  check = FALSE
+)
+```
+
+
+```{r echo=FALSE}
+knitr::kable(res[,1:5])
+plot(res) + theme_bw()
+```
+
+
+Looking up RGBA values for hex colours in R
+-------------------------------------------------------------------------------
+
+Example
+
+```{r}
+col_to_rgb(c('#12345678', '#ab1276'))
+```
+
+
+
+
+```{r eval = FALSE}
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Lots of hex colours
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cols <- sample(colours(), 10000, T) |>
+  col_to_rgb() |>
+  t() |>
+  rgb(maxColorValue = 255)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# Check we all agree on the RGB representation
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+a1 <- col_to_rgb(cols)
+a2 <- col2rgb(cols, alpha = TRUE)
+a3 <- farver::decode_colour(cols) |> t()
+a3 <- rbind(a3, 255L)
+rownames(a3) <- c('red', 'green', 'blue', 'alpha')
+identical(a1, a2)
+identical(a2, a3)
+
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# benchmark
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+library(farver)
+res <- bench::mark(
+  colourlookup = col_to_rgb(cols),
+  baseR        = col2rgb(cols, alpha = TRUE),
+  farver       = decode_colour(cols, alpha = TRUE),
+  check = FALSE
+)
+```
+
+
+```{r echo=FALSE}
+knitr::kable(res[,1:5])
+plot(res) + theme_bw()
+```
+
+
+Technical Details: Order-preserving minimal perfect hash
 ===============================================================================
 
 ### Hash
@@ -148,82 +314,3 @@ hash("apple")  => 1
 hash("banana") => 2
 hash("carrot") => 3
 ```
-
-
-## R colours
-
-R has 657 built-in colour names it understands e.g. "red", "hotpink".  This is 
-a fixed list of colours that has not changed membership since originally introduced
-(as far as I know).
-
-When looking up colours with `col2rgb()`, R does a linear search over these 657 colours
-to find the values to return.
-
-Since the list of colours is fixed and known, this colour lookup could be
-replaced by a hash lookup. 
-
-For this package I have used an *order-preserving minimal perfect hash* to do this
-lookup.
-
-## Creating the C code for the minimal perfect hash
-
-There are a number of programs which will produce C code to
-do minimal perfect hashing of a list of strings e.g. `gperf`, `cmph`.
-
-I chose `mph` as described in [A Family of Perfect Hashing Methods(pdf)](https://staff.itee.uq.edu.au/havas/TR0242.pdf)
-
-* Download and compile [http://www.ibiblio.org/pub/Linux/devel/lang/c/mph-1.2.tar.gz]
-* In R: `writeLines(colors(), "input.txt")`
-* On the command line:  `mph < input.txt | emitc > hash.c`
-* Incorporate the `hash.c` code into this package and add the `col_to_rgb()` wrapper
-  which uses it.
-
-## Installation
-
-You can install from [GitHub](https://github.com/coolbutuseless/colourlookup) with:
-
-``` r
-# install.package('remotes')
-remotes::install_github('coolbutuseless/colourlookup')
-```
-
-## Example
-
-```{r example}
-library(colourlookup)
-
-col_to_rgb(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
-```
-
-
-
-Benchmarks
-===============================================================================
-
-Looking up RGBA values for all named colours in R
--------------------------------------------------------------------------------
-
-```{r eval = FALSE}
-cols <- colours()
-
-res <- bench::mark(
-  col_to_rgb(cols),
-  col2rgb(cols, alpha = TRUE),
-  check = TRUE
-)
-```
-
-
-```{r echo=FALSE}
-knitr::kable(res[,1:5])
-plot(res) + theme_bw()
-```
-
-
-
-
-## Acknowledgements
-
-* R Core for developing and maintaining the language.
-* CRAN maintainers, for patiently shepherding packages onto CRAN and maintaining
-  the repository

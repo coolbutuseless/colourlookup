@@ -558,7 +558,7 @@ static int T2[] = {
 
 int hash(const unsigned char *key) {
 	int i;
-	unsigned f0, f1, f2;
+	int f0, f1, f2;
 	const unsigned char *kp = key;
 
 	for (i=-48, f0=f1=f2=0; *kp; ++kp) {
