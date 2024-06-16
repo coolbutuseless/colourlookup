@@ -5,3 +5,5 @@
 ^working$
 ^LICENSE.md$
 ^\.github$
+^man/figures$
+^reference$
