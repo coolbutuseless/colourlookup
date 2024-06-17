@@ -1,8 +1,8 @@
 Type: Package
 Package: colourlookup
 Title: Fast Conversion of Hex Colours and R Colour Names to Integer Arrays
-    of RGBA Values
-Version: 0.1.1.9002
+    of RGBA Values and Packed Integer Native Format
+Version: 0.1.1.9003
 Authors@R: 
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph"))
 Maintainer: Mike Cheng <mikefc@coolbutuseless.com>

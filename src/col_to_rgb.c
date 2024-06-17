@@ -838,9 +838,34 @@ SEXP col_to_rgb_(SEXP cols_) {
   SET_STRING_ELT(names_, 3, mkChar("alpha"));
   SET_VECTOR_ELT(dim_names_, 0, names_);
   setAttrib(res_, R_DimNamesSymbol, dim_names_);
-  
   int *ptr = INTEGER(res_);
   
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Handle logical NA values as transparent
+  // Accept any vector of all logical NA values
+  // But if there's an actual TRUE/FALSE in there, then throw an error
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  if (isLogical(cols_)) {
+    int *lgl = LOGICAL(cols_);
+    for (int i = 0; i < n; i++) {
+      if (*lgl++ == NA_LOGICAL) {
+        *ptr++ = 255;
+        *ptr++ = 255;
+        *ptr++ = 255;
+        *ptr++ = 0;
+      } else {
+        error("Invalid use of logical value as colour");
+      }
+    }
+    UNPROTECT(3);
+    return res_;
+  }
+  
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // String colours
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   for(int i = 0; i < n; i++) {
     const char *str = CHAR(STRING_ELT(cols_, i));
     
