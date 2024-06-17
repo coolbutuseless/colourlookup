@@ -10,7 +10,7 @@
 #include <stdint.h>
 #include <unistd.h>
 
-#include "hash.h"
+#include "hash-color.h"
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -773,7 +773,7 @@ SEXP col_to_packed_int_(SEXP cols_) {
       }
     } else {
       
-      int idx = hash((const unsigned char *)col);
+      int idx = hash_color((const unsigned char *)col);
       // don't need to do a full string comparison, as the probability of
       // an incorrect colour name (e.g. 'bluexx') hashing to a colour
       // that starts with 'blu' seems incredibly remote.  

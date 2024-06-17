@@ -557,7 +557,7 @@ static int T2[] = {
   79, 743, 426, 302, 738, 558, 88, 107, 751, 473,
 };
 
-int hash(const unsigned char *key) {
+int hash_color(const unsigned char *key) {
 	int i;
 	int f0, f1, f2;
 	const unsigned char *kp = key;
