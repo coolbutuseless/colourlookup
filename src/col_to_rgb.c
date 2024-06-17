@@ -16,6 +16,7 @@
 // Colour names as returned by "colors()"
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 char *col_name[] = {
+  "NA", "transparent",
   "white", "aliceblue", "antiquewhite", "antiquewhite1", "antiquewhite2", 
   "antiquewhite3", "antiquewhite4", "aquamarine", "aquamarine1", 
   "aquamarine2", "aquamarine3", "aquamarine4", "azure", "azure1", 
@@ -147,7 +148,9 @@ char *col_name[] = {
 //  cat(sep = "\n")
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 static int col_int[][4] = {
-  {255, 255, 255, 255},
+  {255, 255, 255,   0}, // NA
+  {255, 255, 255,   0}, // transparent
+  {255, 255, 255, 255}, // white
   {240, 248, 255, 255},
   {250, 235, 215, 255},
   {255, 239, 219, 255},
@@ -807,14 +810,14 @@ static int col_int[][4] = {
 }; 
 
 
-extern uint8_t hexlut[128];
+// extern uint8_t hexlut[128];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Convert a hex digit to a nibble. 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // #define hex2nibble(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
-// #define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
-#define hex2nibble(x) (hexlut[(uint8_t)(x)])
+#define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
+// #define hex2nibble(x) (hexlut[(uint8_t)(x)])
 
 
 SEXP col_to_rgb_(SEXP cols_) {
@@ -878,7 +881,7 @@ SEXP col_to_rgb_(SEXP cols_) {
       // Probably worth testing though to figure out what is needed to 
       // actually cause a collision here. (and how much of the strings should
       // be compared to detect it)
-      if (idx < 0 || idx > 656 || memcmp(str, col_name[idx], 3) != 0) {
+      if (idx < 0 || idx > 658 || memcmp(str, col_name[idx], 2) != 0) {
         error("Not a valid colour name: %s", str);
       }
       memcpy(ptr, col_int[idx], 4 * sizeof(int));

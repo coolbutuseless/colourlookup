@@ -27,7 +27,9 @@ extern char *col_name[];
 //  apply(mat, 1, \(x) paste0("{", paste(x, collapse = ", "), "},")) |>
 //  cat(sep = "\n")
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-static uint32_t packed_int[657] = {
+static uint32_t packed_int[659] = {
+  0x00FFFFFF, // NA
+  0x00FFFFFF, // transparent
   0xFFFFFFFF, // white
   0xFFFFF8F0, // aliceblue
   0xFFD7EBFA, // antiquewhite
@@ -688,25 +690,25 @@ static uint32_t packed_int[657] = {
 };
 
 
-uint8_t hexlut[128] = {
-  0,
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 
-  0, 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 
-  14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
-  0, 0, 0, 0, 0, 0, 0
-};
+// uint8_t hexlut[128] = {
+//   0,
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+//   0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 0, 0, 0, 0, 
+//   0, 0, 10, 11, 12, 13, 14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+//   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 11, 12, 13, 
+//   14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
+//   0, 0, 0, 0, 0, 0, 0
+// };
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Convert a hex digit to a nibble. 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // #define hex2nibble(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
-// #define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
+#define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
 // #define hex2nibble(x) ( 9 * ((x) >> 6) + ((x) & 017) )
-#define hex2nibble(x) (hexlut[(uint8_t)(x)])
+// #define hex2nibble(x) (hexlut[(uint8_t)(x)])
 
 SEXP col_to_packed_int_(SEXP cols_) {
   
@@ -778,7 +780,7 @@ SEXP col_to_packed_int_(SEXP cols_) {
       // Probably worth testing though to figure out what is needed to 
       // actually cause a collision here. (and how much of the strings should
       // be compared to detect it)
-      if (idx < 0 || idx > 656 || memcmp(col, col_name[idx], 3) != 0) {
+      if (idx < 0 || idx > 658 || memcmp(col, col_name[idx], 2) != 0) {
         error("Not a valid colour name: %s", col);
       }
       *ptr++ = packed_int[idx];

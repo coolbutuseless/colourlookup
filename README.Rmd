@@ -129,6 +129,13 @@ I chose `mph` as described in [A Family of Perfect Hashing Methods(pdf)](https:/
 * Incorporate the `hash.c` code into this package and add the `col_to_rgb()` wrapper
   which uses it.
 
+```{r echo=FALSE, eval=FALSE}
+writeLines(c("NA", 'transparent', colours()), "working/mph-1.2/input.txt")
+orig <- setwd("working/mph-1.2/")
+system('./mph < input.txt | ./emitc > hash.c')
+setwd(orig)
+```
+
 
 
 Benchmarks

@@ -1,6 +1,7 @@
-# colourlookup 0.1.1.9000  2024-06-16
+# colourlookup 0.1.1.9002  2024-06-16
 
 * Lookup packed integer RGBA colours for nativerasters
+* Include NA and 'transparent' in named colour lookup
 
 # colourlookup 0.1.1  2024-06-16
 

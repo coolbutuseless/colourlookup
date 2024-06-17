@@ -2,7 +2,7 @@ Type: Package
 Package: colourlookup
 Title: Fast Conversion of Hex Colours and R Colour Names to Integer Arrays
     of RGBA Values
-Version: 0.1.1.9000
+Version: 0.1.1.9002
 Authors@R: 
     person("Mike", "Cheng", , "mikefc@coolbutuseless.com", role = c("aut", "cre", "cph"))
 Maintainer: Mike Cheng <mikefc@coolbutuseless.com>
@@ -13,3 +13,6 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.3.1
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
