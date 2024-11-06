@@ -21,13 +21,10 @@ RUN install2.r --error --skipinstalled -n -1 \
         cluster \
         tidymodels \
         markdown \
-	jpeg \
-	png \
-	checkhelper \
         ottr \
     && rm -rf /tmp/downloaded_packages \
     && R -q -e 'remotes::install_github("https://github.com/dcomtois/summarytools/tree/0-8-9")'
 
 # Install Python packages
 COPY requirements.txt /tmp/pip-tmp/
-RUN python3 -m pip --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt
+RUN python3 -m pip --disable-pip-version-check --no-cache-dir install -r /tmp/pip-tmp/requirements.txt --break-system-packages
