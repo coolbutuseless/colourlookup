@@ -20,5 +20,5 @@ This is a replacement for \code{grDevices::col2rgb()}, and can be
 100 times faster.
 }
 \examples{
-col_to_rgb(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
+col_to_rgb(c("hotpink", "#abc", "#abcd", "#aabb99", "#aabb9980"))
 }

@@ -19,5 +19,5 @@ Integer vector where the 4 bytes making up each integer represent
 Packed RGBA values are used in R's native raster objects.
 }
 \examples{
-col_to_int(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
+col_to_int(c("hotpink", "#abc", "#abcd", "#aabb99", "#aabb9980"))
 }

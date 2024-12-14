@@ -744,7 +744,7 @@ SEXP col_to_int_(SEXP cols_) {
         break;
       case 5: // #1234 = #11223344
         ptr[i] =
-          (uint32_t)(hex2nibble(col[4]) << 28) +
+          ((uint32_t)(hex2nibble(col[4])) << 28) +
           (uint32_t)(hex2nibble(col[4]) << 24) +
           (uint32_t)(hex2nibble(col[3]) << 20) +
           (uint32_t)(hex2nibble(col[3]) << 16) +
@@ -765,7 +765,7 @@ SEXP col_to_int_(SEXP cols_) {
         break;
       case 9: // #rrggbbaa
         ptr[i] =
-          (uint32_t)(hex2nibble(col[7]) << 28) +
+          ((uint32_t)(hex2nibble(col[7])) << 28) +
           (uint32_t)(hex2nibble(col[8]) << 24) +
           (uint32_t)(hex2nibble(col[5]) << 20) +
           (uint32_t)(hex2nibble(col[6]) << 16) +

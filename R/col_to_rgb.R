@@ -12,7 +12,7 @@
 #' @return An integer matrix with four rows and number of columns 
 #'   the length of the input.
 #' @examples
-#' col_to_rgb(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
+#' col_to_rgb(c("hotpink", "#abc", "#abcd", "#aabb99", "#aabb9980"))
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 col_to_rgb <- function(col) {
@@ -30,7 +30,7 @@ col_to_rgb <- function(col) {
 #' @return Integer vector where the 4 bytes making up each integer represent 
 #'   the RGBA values of the colour
 #' @examples
-#' col_to_int(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
+#' col_to_int(c("hotpink", "#abc", "#abcd", "#aabb99", "#aabb9980"))
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 col_to_int <- function(col) {
