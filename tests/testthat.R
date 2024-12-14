@@ -7,6 +7,6 @@
 # * https://testthat.r-lib.org/articles/special-files.html
 
 library(testthat)
-library(colourlookup)
+library(colorfast)
 
-test_check("colourlookup")
+test_check("colorfast")

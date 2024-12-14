@@ -1,5 +1,5 @@
 
-
+#define R_NO_REMAP
 
 #include <R.h>
 #include <Rinternals.h>
@@ -14,7 +14,7 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Colour names as returned by "colors()"
+// color names as returned by "colors()"
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 char *col_name[] = {
   "NA", "transparent",
@@ -140,11 +140,11 @@ char *col_name[] = {
 };
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Actual colour values
+// Actual color values
 //
 // Mostly created with the following code:
 //
-//  mat <- t(col2rgb(colours(), alpha = TRUE))
+//  mat <- t(col2rgb(colors(), alpha = TRUE))
 //  apply(mat, 1, \(x) paste0("{", paste(x, collapse = ", "), "},")) |>
 //  cat(sep = "\n")
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -811,33 +811,31 @@ static int col_int[][4] = {
 }; 
 
 
-// extern uint8_t hexlut[128];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Convert a hex digit to a nibble. 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// #define hex2nibble(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
 #define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
-// #define hex2nibble(x) (hexlut[(uint8_t)(x)])
 
 
 SEXP col_to_rgb_(SEXP cols_) {
   
+  int nprotect = 0;
   int n = LENGTH(cols_);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Output matrix
-  //   - 4 rows = one for each colour
+  //   - 4 rows = one for each color
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_        = PROTECT(allocMatrix(INTSXP, 4, n));
-  SEXP dim_names_  = PROTECT(allocVector(VECSXP, 2));
-  SEXP names_      = PROTECT(allocVector(STRSXP, 4));
-  SET_STRING_ELT(names_, 0, mkChar("red"));
-  SET_STRING_ELT(names_, 1, mkChar("green"));
-  SET_STRING_ELT(names_, 2, mkChar("blue"));
-  SET_STRING_ELT(names_, 3, mkChar("alpha"));
+  SEXP res_        = PROTECT(Rf_allocMatrix(INTSXP, 4, n)); nprotect++;
+  SEXP dim_names_  = PROTECT(Rf_allocVector(VECSXP, 2)); nprotect++;
+  SEXP names_      = PROTECT(Rf_allocVector(STRSXP, 4)); nprotect++;
+  SET_STRING_ELT(names_, 0, Rf_mkChar("red"));
+  SET_STRING_ELT(names_, 1, Rf_mkChar("green"));
+  SET_STRING_ELT(names_, 2, Rf_mkChar("blue"));
+  SET_STRING_ELT(names_, 3, Rf_mkChar("alpha"));
   SET_VECTOR_ELT(dim_names_, 0, names_);
-  setAttrib(res_, R_DimNamesSymbol, dim_names_);
+  Rf_setAttrib(res_, R_DimNamesSymbol, dim_names_);
   int *ptr = INTEGER(res_);
   
   
@@ -846,7 +844,7 @@ SEXP col_to_rgb_(SEXP cols_) {
   // Accept any vector of all logical NA values
   // But if there's an actual TRUE/FALSE in there, then throw an error
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  if (isLogical(cols_)) {
+  if (Rf_isLogical(cols_)) {
     int *lgl = LOGICAL(cols_);
     for (int i = 0; i < n; i++) {
       if (*lgl++ == NA_LOGICAL) {
@@ -855,7 +853,7 @@ SEXP col_to_rgb_(SEXP cols_) {
         *ptr++ = 255;
         *ptr++ = 0;
       } else {
-        error("Invalid use of logical value as colour");
+        Rf_error("Invalid use of logical value as color");
       }
     }
     UNPROTECT(3);
@@ -864,7 +862,7 @@ SEXP col_to_rgb_(SEXP cols_) {
   
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  // String colours
+  // String colors
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   for(int i = 0; i < n; i++) {
     const char *str = CHAR(STRING_ELT(cols_, i));
@@ -872,49 +870,56 @@ SEXP col_to_rgb_(SEXP cols_) {
     if (str[0] == '#') {
       switch(strlen(str)) {
       case 9: 
-        *ptr++ = (hex2nibble(str[1]) << 4) + hex2nibble(str[2]);
-        *ptr++ = (hex2nibble(str[3]) << 4) + hex2nibble(str[4]);
-        *ptr++ = (hex2nibble(str[5]) << 4) + hex2nibble(str[6]);
-        *ptr++ = (hex2nibble(str[7]) << 4) + hex2nibble(str[8]);
+        ptr[0] = (hex2nibble(str[1]) << 4) + hex2nibble(str[2]);
+        ptr[1] = (hex2nibble(str[3]) << 4) + hex2nibble(str[4]);
+        ptr[2] = (hex2nibble(str[5]) << 4) + hex2nibble(str[6]);
+        ptr[3] = (hex2nibble(str[7]) << 4) + hex2nibble(str[8]);
         break;
       case 7: 
-        *ptr++ = (hex2nibble(str[1]) << 4) + hex2nibble(str[2]);
-        *ptr++ = (hex2nibble(str[3]) << 4) + hex2nibble(str[4]);
-        *ptr++ = (hex2nibble(str[5]) << 4) + hex2nibble(str[6]);
-        *ptr++ = 255;
+        ptr[0] = (hex2nibble(str[1]) << 4) + hex2nibble(str[2]);
+        ptr[1] = (hex2nibble(str[3]) << 4) + hex2nibble(str[4]);
+        ptr[2] = (hex2nibble(str[5]) << 4) + hex2nibble(str[6]);
+        ptr[3] = 255;
         break;
       case 5: 
-        *ptr++ = hex2nibble(str[1]) * (16 + 1);
-        *ptr++ = hex2nibble(str[2]) * (16 + 1);
-        *ptr++ = hex2nibble(str[3]) * (16 + 1);
-        *ptr++ = hex2nibble(str[4]) * (16 + 1);
+        ptr[0] = hex2nibble(str[1]) * (16 + 1);
+        ptr[1] = hex2nibble(str[2]) * (16 + 1);
+        ptr[2] = hex2nibble(str[3]) * (16 + 1);
+        ptr[3] = hex2nibble(str[4]) * (16 + 1);
         break;
       case 4: 
-        *ptr++ = hex2nibble(str[1]) * (16 + 1);
-        *ptr++ = hex2nibble(str[2]) * (16 + 1);
-        *ptr++ = hex2nibble(str[3]) * (16 + 1);
-        *ptr++ = 255;
+        ptr[0] = hex2nibble(str[1]) * (16 + 1);
+        ptr[1] = hex2nibble(str[2]) * (16 + 1);
+        ptr[2] = hex2nibble(str[3]) * (16 + 1);
+        ptr[3] = 255;
         break;
       default:
-        error("Unhandled hex notation for: %s", str);
+        Rf_error("col_to_rgb_(): Hex notation error: %s", str);
       }
+      ptr += 4;
     } else {
       
       int idx = hash_color((const unsigned char *)str);
       // don't need to do a full string comparison, as the probability of
-      // an incorrect colour name (e.g. 'bluexx') hashing to a colour
+      // an incorrect color name (e.g. 'bluexx') hashing to a color
       // that starts with 'blu' seems incredibly remote.  
       // Probably worth testing though to figure out what is needed to 
       // actually cause a collision here. (and how much of the strings should
       // be compared to detect it)
       if (idx < 0 || idx > 658 || memcmp(str, col_name[idx], 2) != 0) {
-        error("Not a valid colour name: %s", str);
+        Rf_error("col_to_rgb_(): Not a valid color name: %s", str);
       }
       memcpy(ptr, col_int[idx], 4 * sizeof(int));
       ptr += 4;
     }
   }
-  UNPROTECT(3);
   
+  
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  // Tidy and return
+  //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  UNPROTECT(nprotect);
   return res_;
 }
+
+

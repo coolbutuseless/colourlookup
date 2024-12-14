@@ -1,5 +1,5 @@
 
-
+#define R_NO_REMAP
 
 #include <R.h>
 #include <Rinternals.h>
@@ -14,16 +14,16 @@
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Colour names as returned by "colors()"
+// color names as returned by "colors()"
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 extern char *col_name[];
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// Actual colour values
+// Actual color values
 //
 // Mostly created with the following code:
 //
-//  mat <- t(col2rgb(colours(), alpha = TRUE))
+//  mat <- t(col2rgb(colors(), alpha = TRUE))
 //  apply(mat, 1, \(x) paste0("{", paste(x, collapse = ", "), "},")) |>
 //  cat(sep = "\n")
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -689,7 +689,9 @@ static uint32_t packed_int[659] = {
   0xFF32CD9A  // yellowgreen
 };
 
-
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Prior hex-to-nibble methods
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // uint8_t hexlut[128] = {
 //   0,
 //   0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
@@ -700,24 +702,28 @@ static uint32_t packed_int[659] = {
 //   14, 15, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 //   0, 0, 0, 0, 0, 0, 0
 // };
+// #define hex2nibble(x) ( 9 * ((x) >> 6) + ((x) & 017) )
+// #define hex2nibble(x) (hexlut[(uint8_t)(x)])
+// #define hex2nibble(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
 
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 // Convert a hex digit to a nibble. 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-// #define hex2nibble(s) ((s) <= '9') ? (s) - '0' : ((s) & 0x7) + 9;
 #define hex2nibble(x) ( (((x) & 0xf) + ((x) >> 6) + ((x >> 6) << 3)) & 0xf )
-// #define hex2nibble(x) ( 9 * ((x) >> 6) + ((x) & 017) )
-// #define hex2nibble(x) (hexlut[(uint8_t)(x)])
 
-SEXP col_to_packed_int_(SEXP cols_) {
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Convert a character vector of R colors to 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+SEXP col_to_int_(SEXP cols_) {
   
   int n = LENGTH(cols_);
   
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   // Output is an integer vector
   //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-  SEXP res_ = PROTECT(allocVector(INTSXP, n));
+  SEXP res_ = PROTECT(Rf_allocVector(INTSXP, n));
 
   uint32_t *ptr = (uint32_t *)INTEGER(res_);
   
@@ -727,7 +733,7 @@ SEXP col_to_packed_int_(SEXP cols_) {
     if (col[0] == '#') {
       switch (strlen(col)) {
       case 4:  // #123 == #112233
-        *ptr++ =
+        ptr[i] =
           0xFF000000u + 
           (uint32_t)(hex2nibble(col[3]) << 20) +
           (uint32_t)(hex2nibble(col[3]) << 16) +
@@ -737,7 +743,7 @@ SEXP col_to_packed_int_(SEXP cols_) {
           (uint32_t)(hex2nibble(col[1]) <<  0);
         break;
       case 5: // #1234 = #11223344
-        *ptr++ =
+        ptr[i] =
           (uint32_t)(hex2nibble(col[4]) << 28) +
           (uint32_t)(hex2nibble(col[4]) << 24) +
           (uint32_t)(hex2nibble(col[3]) << 20) +
@@ -748,7 +754,7 @@ SEXP col_to_packed_int_(SEXP cols_) {
           (uint32_t)(hex2nibble(col[1]) <<  0);
         break;
       case 7: // #rrggbb
-        *ptr++ =
+        ptr[i] =
           0xFF000000u + 
           (uint32_t)(hex2nibble(col[5]) << 20) +
           (uint32_t)(hex2nibble(col[6]) << 16) +
@@ -758,7 +764,7 @@ SEXP col_to_packed_int_(SEXP cols_) {
           (uint32_t)(hex2nibble(col[2]) <<  0);
         break;
       case 9: // #rrggbbaa
-        *ptr++ =
+        ptr[i] =
           (uint32_t)(hex2nibble(col[7]) << 28) +
           (uint32_t)(hex2nibble(col[8]) << 24) +
           (uint32_t)(hex2nibble(col[5]) << 20) +
@@ -769,24 +775,27 @@ SEXP col_to_packed_int_(SEXP cols_) {
           (uint32_t)(hex2nibble(col[2]) <<  0);
         break;
       default:
-        error("Unhandled hex notation for: %s", col);
+        Rf_error("col_to_int_(): Hex notation error: %s", col);
       }
     } else {
       
       int idx = hash_color((const unsigned char *)col);
       // don't need to do a full string comparison, as the probability of
-      // an incorrect colour name (e.g. 'bluexx') hashing to a colour
+      // an incorrect color name (e.g. 'bluexx') hashing to a color
       // that starts with 'blu' seems incredibly remote.  
       // Probably worth testing though to figure out what is needed to 
       // actually cause a collision here. (and how much of the strings should
       // be compared to detect it)
       if (idx < 0 || idx > 658 || memcmp(col, col_name[idx], 2) != 0) {
-        error("Not a valid colour name: %s", col);
+        Rf_error("col_to_int_(): Not a valid color name: %s", col);
       }
-      *ptr++ = packed_int[idx];
+      ptr[i] = packed_int[idx];
     }
   }
-  UNPROTECT(1);
   
+  
+  UNPROTECT(1);
   return res_;
 }
+
+

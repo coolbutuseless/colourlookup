@@ -1,6 +1,6 @@
 
 
-test_that("string colour conversion works", {
+test_that("string color conversion works", {
   
   cols1 <- c(NA_character_, 'transparent')
   expect_identical(
@@ -10,7 +10,7 @@ test_that("string colour conversion works", {
   
 })
 
-test_that("string colour conversion works", {
+test_that("string color conversion works", {
   
   cols1 <- sample(colors(), 1000, T)
   cols2 <- rgb(t(col2rgb(cols1)), maxColorValue = 255)
@@ -31,7 +31,7 @@ test_that("string colour conversion works", {
 
 test_that("conversion to native raster works", {
   
-  # farver::encode_native(colours())  |> dput()
+  # farver::encode_native(colors())  |> dput()
   farver_ref <- c(
     -1L, -1808L, -2626566L, -2363393L, -3350546L, -5193523L, -8879221L, 
     -2818177L, -2818177L, -3740042L, -5583514L, -9139387L, -16L, 
@@ -145,7 +145,7 @@ test_that("conversion to native raster works", {
   
   
   expect_identical(
-    col_to_packed_int(colours()),
+    col_to_int(colors()),
     farver_ref
   )
 

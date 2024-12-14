@@ -1,3 +1,25 @@
+
+// ## Creating the C code for the minimal perfect hash
+// 
+// There are a number of programs which will produce C code to
+// do minimal perfect hashing of a list of strings e.g. `gperf`, `cmph`.
+// 
+// I chose `mph` as described in [A Family of Perfect Hashing Methods(pdf)](https://staff.itee.uq.edu.au/havas/TR0242.pdf)
+//                                                                            
+// * Download and compile [http://www.ibiblio.org/pub/Linux/devel/lang/c/mph-1.2.tar.gz]
+// * In R: `writeLines(colors(), "input.txt")`
+// * On the command line:  `mph < input.txt | emitc > hash.c`
+// * Incorporate the `hash.c` code into this package and add the `col_to_rgb()` wrapper
+// which uses it.
+// 
+// ```{r echo=FALSE, eval=FALSE}
+// writeLines(c("NA", 'transparent', colors()), "working/mph-1.2/input.txt")
+// orig <- setwd("working/mph-1.2/")
+// system('./mph < input.txt | ./emitc > hash.c')
+// setwd(orig)
+// ```
+
+
 /*
  * d=3
  * n=811

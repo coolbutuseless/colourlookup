@@ -1,3 +1,3 @@
-#' @useDynLib colourlookup, .registration=TRUE
+#' @useDynLib colorfast, .registration=TRUE
 NULL
 

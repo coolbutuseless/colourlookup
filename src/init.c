@@ -4,17 +4,17 @@
 #include <Rinternals.h>
 
 extern SEXP col_to_rgb_(SEXP cols_);
-extern SEXP col_to_packed_int_(SEXP cols_);
+extern SEXP col_to_int_(SEXP cols_);
 
 static const R_CallMethodDef CEntries[] = {
   
   {"col_to_rgb_", (DL_FUNC) &col_to_rgb_, 1},
-  {"col_to_packed_int_", (DL_FUNC) &col_to_packed_int_, 1},
+  {"col_to_int_", (DL_FUNC) &col_to_int_, 1},
   {NULL , NULL, 0}
 };
 
 
-void R_init_colourlookup(DllInfo *info) {
+void R_init_colorfast(DllInfo *info) {
   R_registerRoutines(
     info,      // DllInfo
     NULL,      // .C

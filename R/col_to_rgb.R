@@ -1,20 +1,18 @@
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Convert colours-as-strings to a matrix of RGBA integers
+#' Fast conversion of colors-as-strings to a matrix of RGBA integers
 #' 
-#' This is a proof-of-concept drop-in replacement for \code{grDevices::col2rgb()}
-#' which uses an order-preserving minimal perfect hash to lookup R colour
-#' names.
+#' This is a replacement for \code{grDevices::col2rgb()}, and can be
+#' 100 times faster.
 #' 
-#' @param col Character vector of colour names. Supports all R colour names
-#'        (e.g. "red", "hotpink") and hex colours of the form:  "#RRGGBBAA", 
+#' @param col Character vector of color names. Supports all R color names
+#'        (e.g. "red", "hotpink") and hex colors of the form:  "#RRGGBBAA", 
 #'        "#RRGGBB", "#RGBA" and "#RGB".  
-#'        
+#' @return An integer matrix with four rows and number of columns 
+#'   the length of the input.
 #' @examples
 #' col_to_rgb(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
-#' 
-#' 
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 col_to_rgb <- function(col) {
@@ -23,13 +21,18 @@ col_to_rgb <- function(col) {
 
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#' Convert colours-as-strings to packed integer colours for nativeRasters
+#' Fast conversion of colors-as-strings to an integer vector of packed RGBA values.
+#' 
+#' Packed RGBA values are used in R's native raster objects.
 #' 
 #' @inheritParams col_to_rgb
 #' 
-#' @return integer vector
+#' @return Integer vector where the 4 bytes making up each integer represent 
+#'   the RGBA values of the colour
+#' @examples
+#' col_to_int(c("hotpink", "#abc", "#aabb99", "#aabb9980"))
 #' @export
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-col_to_packed_int <- function(col) {
-  .Call(col_to_packed_int_, col)
+col_to_int <- function(col) {
+  .Call(col_to_int_, col)
 }
